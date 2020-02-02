@@ -5,7 +5,7 @@
   "main": "index.js",
   "engine": {
     "node": "10.16.1",
-    "npm": "6.9.0",
+    "npm": "6.9.0"
   },
   "scripts": {
     "start": "nodemon server/index.js"
