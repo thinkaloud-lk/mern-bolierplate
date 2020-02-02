@@ -1,4 +1,8 @@
 const mongoose = require('mongoose');
+const bctypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+const saltRounds = 10;
 
 const userSchema = mongoose.Schema({
   name: {
@@ -30,6 +34,41 @@ const userSchema = mongoose.Schema({
   }
 });
 
-const User = mongoose.model('user', userSchema);
+userSchema.pre("save", function (next) {
+  var user = this;
+  if (user.isModified('password')) {
+
+    bctypt.genSalt(saltRounds, (err, salt) => {
+      if (err) return next(err);
+      bctypt.hash(user.password, salt, (err, hash) => {
+        if (err) next(err);
+        user.password = hash;
+        next()
+      })
+    })
+  } else {
+    next()
+  }
+})
+
+userSchema.methods.compairPassword = function (plainPassword, callBack) {
+  bctypt.compare(plainPassword, this.password, (err, success) => {
+    if (err) callBack(err);
+    callBack(null, success)
+  })
+}
+
+userSchema.methods.generateToken = function (callBack) {
+  const user = this;
+  const token = jwt.sign(user._id.toHexString(), 'secret');
+  user.token = token;
+  user.save((err, user) => {
+    if (err) callBack(err);
+    console.log('user', user)
+    callBack(null, user)
+  })
+}
+
+const User = mongoose.model('User', userSchema);
 
 module.exports = { User }

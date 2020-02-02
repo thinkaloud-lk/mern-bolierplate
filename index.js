@@ -28,4 +28,20 @@ app.post('/api/users/register', (req, res) => {
   })
 })
 
+app.post('/api/users/login', (req, res) => {
+  User.findOne({ 'email': req.body.email }, (err, user) => {
+    if (!user) return res.json({ loginSuccess: false, message: "User not found" })
+    user.compairPassword(req.body.password, (err, isMatch) => {
+      if (!isMatch) return res.json({ loginSuccess: false, message: 'Invalid credentials' })
+      user.generateToken((err, user) => {
+        if (err) return res.status(400).send(err);
+        return res.cookie('auth', user.token)
+          .status(200)
+          .json({ loginSuccess: true })
+      })
+    })
+  })
+
+})
+
 app.listen(4000, () => console.log('server running in 4000'))
