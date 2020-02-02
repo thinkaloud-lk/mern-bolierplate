@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "description": "A boilerplate app for the MERN stack",
   "main": "index.js",
+  "engine": {
+    "node": "10.16.1",
+    "npm": "6.9.0",
+  },
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon server/index.js"
   },
   "author": "Chinthaka Weerakkody",
   "license": "ISC",
