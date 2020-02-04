@@ -1,84 +1,46 @@
+const Joi = require('joi');
 const mongoose = require('mongoose');
-const bctypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const saltRounds = 10;
-
-const userSchema = mongoose.Schema({
+const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    maxLength: 50,
+    minlength: 5,
+    maxlength: 50,
+    required: true,
   },
   email: {
     type: String,
-    trim: true,
-    unique: 1,
+    minlength: 5,
+    maxlength: 255,
+    unique: true,
+    required: true,
   },
   password: {
     type: String,
-    maxLength: 5,
+    minlength: 5,
+    maxlength: 1024,
+    required: true
   },
-  lastName: {
-    type: String,
-    maxLength: 50,
-  },
-  role: {
-    type: Number,
-    default: 0,
-  },
-  token: {
-    type: String,
-  },
-  tokenExp: {
-    type: Number
+  isAdmin: {
+    type: Boolean,
   }
+
 });
 
-userSchema.pre("save", function (next) {
-  var user = this;
-  if (user.isModified('password')) {
-
-    bctypt.genSalt(saltRounds, (err, salt) => {
-      if (err) return next(err);
-      bctypt.hash(user.password, salt, (err, hash) => {
-        if (err) next(err);
-        user.password = hash;
-        next()
-      })
-    })
-  } else {
-    next()
-  }
-})
-
-userSchema.methods.compairPassword = function (plainPassword, callBack) {
-  bctypt.compare(plainPassword, this.password, (err, success) => {
-    if (err) callBack(err);
-    callBack(null, success)
-  })
-}
-
-userSchema.methods.generateToken = function (callBack) {
-  const user = this;
-  const token = jwt.sign(user._id.toHexString(), 'secret');
-  user.token = token;
-  user.save((err, user) => {
-    if (err) callBack(err);
-    console.log('user', user)
-    callBack(null, user)
-  })
-}
-
-userSchema.statics.findUserByToken = function (token, callBack) {
-  const user = this;
-  jwt.verify(token, 'secret', (err, userId) => {
-    this.findOne({ '_id': userId, 'token': token }, (err, user) => {
-      if (err) return callBack(err);
-      return callBack(null, user);
-    })
-  })
+userSchema.methods.generateWebToken = function () {
+  return jwt.sign({ _id: this._id, isAdmin: this.isAdmin }, process.env.mern_boilerplate_jwtPrivateKey)
 }
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = { User }
+const validateUserData = (data) => {
+  return Joi.validate(data, {
+    name: Joi.string().min(5).max(50).required(),
+    email: Joi.string().min(5).required().email(),
+    password: Joi.string().min(5).max(255).required(),
+  })
+}
+
+exports.User = User;
+exports.validate = validateUserData;
