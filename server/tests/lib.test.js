@@ -1,0 +1,1 @@
+test('First test', () => { throw new Error('fail') })

@@ -9,7 +9,8 @@
   },
   "scripts": {
     "start": "node server/index.js",
-    "backend": "nodemon server/index.js"
+    "backend": "nodemon server/index.js",
+    "test": "jest"
   },
   "author": "Chinthaka Weerakkody",
   "license": "ISC",
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "dotenv": "^8.2.0",
+    "jest": "^25.1.0",
     "nodemon": "^2.0.2"
   }
 }
